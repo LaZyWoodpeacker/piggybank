@@ -1,0 +1,5 @@
+<svg class="plusbutton" width="65" height="65" viewBox="0 0 65 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="32.5" cy="32.5" r="31" fill="#DB9501" stroke="#F0F0ED" stroke-width="3"/>
+<rect x="28.6765" y="11.4706" width="8.92157" height="42.6961" fill="#F5F5F5"/>
+<rect x="11.4706" y="36.9608" width="8.92157" height="42.6961" transform="rotate(-90 11.4706 36.9608)" fill="#F5F5F5"/>
+</svg>

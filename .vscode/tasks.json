@@ -1,0 +1,26 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "mon",
+            "type": "shell",
+            "command": "nodemon main.js",
+            "problemMatcher": []
+        },
+        {
+            "label": "notebook",
+            "type": "shell",
+            "command": "jupyter notebook",
+            "problemMatcher": []
+        },
+        {
+            "label": "pymon",
+            "type": "shell",
+            "command": "python main.py",
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}
