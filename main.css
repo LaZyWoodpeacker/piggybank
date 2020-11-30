@@ -95,11 +95,13 @@ footer {
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 100vh;
     position: absolute;
     top: 0;
     z-index: 998;
     background: rgba(0, 0, 0, 0.27);
+    height: 100vh;
+    max-height: 100vh;
+    overflow: auto;
 }
 
 .main_dlg__dlg {
@@ -210,6 +212,7 @@ footer {
     justify-content: space-between;
     width: 310px;
     color: #2E2300;
+    position: relative;
 }
 
 .list__placeholder {
@@ -247,4 +250,48 @@ footer {
 .list__first {
     font-size: 24px;
     text-align: center;
+}
+
+.list__monthly {
+    font-size: 24px;
+    text-align: center;
+}
+
+.list__del {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    width: 28px;
+    cursor: pointer;
+}
+
+.list__graph {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    width: 28px;
+    cursor: pointer;
+}
+
+.list__del:hover .color {
+    fill: #6E6702;
+}
+
+.list__edit {
+    width: 104px;
+    height: 42px;
+    font-weight: bold;
+    font-size: large;
+    background: #DB9501;
+    border-radius: 10px;
+    color: whitesmoke;
+    cursor: pointer;
+    margin: 0 auto;
+}
+
+.footer-info {
+    margin-top: 20px;
+    margin-left: 10px;
+    color: white;
+    font-size: 20px;
 }

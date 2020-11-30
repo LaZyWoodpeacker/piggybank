@@ -28,14 +28,15 @@ function numberWithSpaces(x) {
 }
 
 class makeGraph {
-    constructor(mainCls, width = '375', colors = ['red', 'green', 'blue']) {
+    constructor(mainCls, width = '375', colors = ['#C05805', 'green', 'blue']) {
         this.colors = {};
         this.colors.percent = colors[1];
         this.colors.all = colors[0];
         this.colors.first = colors[2];
         this.width = width;
         this.height = width;
-        this.div = document.querySelector(mainCls);
+        // this.div = document.querySelector(mainCls);
+        this.div = mainCls;
         this.div.style.position = 'relative';
         this.div.style.width = width + 'px'
         this.div.style.height = "100%"
@@ -80,9 +81,9 @@ class makeGraph {
             li.style.textTransform = 'uppercase';
             this.legend.appendChild(li);
         }
-        makeLi(this.colors.percent, 'Погашено процентами: ' + (object.percentSumm).toFixed(2));
-        makeLi(this.colors.all, 'Собственные средства: ' + (object.paySumm).toFixed(2));
-        makeLi(this.colors.first, 'Начальный платёж: ' + (object.first).toFixed(2));
+        makeLi(this.colors.percent, 'Погашено процентами: ' + parseFloat(object.percentSumm).toFixed(2));
+        makeLi(this.colors.all, 'Собственные средства: ' + parseFloat(object.paySumm).toFixed(2));
+        makeLi(this.colors.first, 'Начальный платёж: ' + parseFloat(object.first).toFixed(2));
         const li = document.createElement('li');
         return this.legend
     }
@@ -142,9 +143,9 @@ class makeGraph {
     }
 
     drawGraph(t) {
-        graph.draw(t);
-        graph.makeLegend(t);
-        graph.makeList(t);
+        this.draw(t);
+        this.makeLegend(t);
+        this.makeList(t);
     }
 }
 
@@ -175,7 +176,9 @@ class Dialog {
         const card = this.createEm('div', this.cls + '__add_form');
         const target = this.createEm('input', this.cls + '__target');
         target.placeholder = 'Ваша цель';
-        target.value = (data) ? data.name : '';
+        if (data.name) {
+            target.value = (data.name)
+        }
         const cost = this.createEm('input', this.cls + '__cost');
         cost.placeholder = 'Цена'
         cost.type = 'number';
@@ -219,33 +222,31 @@ class Dialog {
         card.appendChild(makePlaceholder('не скупись'));
         card.appendChild(bet);
         card.appendChild(makePlaceholder('раз в месяц'));
-        function validate(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        card.validate = function () {
             div.validate = false;
             const testTarget = /[\w\s]{1,20}/;
             if (testTarget.test(target.value)) {
                 div.validate = true;
-                console.log(testTarget.test(target.value));
+
             } else { div.validate = false }
             const testNum = /\d+/;
             if (testNum.test(cost.value)) {
                 div.validate = true;
-                console.log(testNum.test(cost.value));
+
             } else { div.validate = false }
             if (testNum.test(term.value)) {
                 div.validate = true;
-                console.log(testNum.test(term.value));
+
             } else { div.validate = false }
             if (testNum.test(rate.value)) {
                 div.validate = true;
-                console.log(testNum.test(rate.value));
+
             } else { div.validate = false }
             if (testNum.test(first.value)) {
                 div.validate = true;
-                console.log(testNum.test(first.value));
+
             } else { div.validate = false }
-            div.curObj = calc(cost.value, rate.value, term.value, first.value, name.value);
+            div.curObj = calc(parseFloat(cost.value), parseFloat(rate.value), parseFloat(term.value), parseFloat(first.value), target.value);
             if (Number(div.curObj.payUp.toFixed(2)) > 0) {
                 bet.value = Number(div.curObj.payUp.toFixed(2));
             } else {
@@ -261,8 +262,16 @@ class Dialog {
             }
         }
         card.querySelectorAll('input').forEach(e => {
-            e.addEventListener('change', validate);
-            e.addEventListener('keyup', validate);
+            e.addEventListener('change', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                card.validate()
+            });
+            e.addEventListener('keyup', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                card.validate()
+            });
         })
         return card;
     }
@@ -278,13 +287,16 @@ class Dialog {
         }
         const btnBlock = this.createEm('div', this.cls + '__buttons');
 
-        this.btnYes = this.createEm('button', this.cls + '__but', 'Добавить');
-        this.btnYes.disbled = true
+        this.btnYes = this.createEm('button', this.cls + '__but');
+        if (Object.keys(obj).length) {
+            this.btnYes.innerText = "Изменить"
+        } else {
+            this.btnYes.innerText = "Добавить"
+        }
         this.btnYes.addEventListener('click', function (e) {
             e.preventDefault();
             if (!this.disbled) {
-                console.log(div.curObj);
-                closeFunc(div, true);
+                closeFunc(div, this.innerText);
             }
         })
         const btnNo = this.createEm('button', this.cls + '__but', 'Назад');
@@ -301,6 +313,7 @@ class Dialog {
         btnBlock.appendChild(this.btnYes);
         btnBlock.appendChild(btnNo);
         this.show();
+        form.validate()
     }
 
     drawYesNo(messageText, closeFunc) {
@@ -335,6 +348,33 @@ class Dialog {
         this.show();
     }
 
+    drawGraph(data, closeFunc) {
+        if (this.dlg) {
+            [...this.dlg.children].forEach(e => e.remove());
+        } else {
+            this.dlg = document.createElement('div');
+            this.div.appendChild(this.dlg);
+        }
+        this.dlg.classList.add(this.cls + '__dlg');
+
+        const message = this.createEm('div', this.cls + '__graph');
+        const graph = new makeGraph(message, 300);
+        const em = graph.drawGraph(data);
+
+
+        const btnBlock = this.createEm('div', this.cls + '__buttons');
+
+        const btnYes = this.createEm('button', this.cls + '__but', 'Закрыть');
+        btnYes.addEventListener('click', e => {
+            e.preventDefault();
+            closeFunc(this, true);
+        })
+        btnBlock.appendChild(btnYes);
+        this.dlg.appendChild(message);
+        this.dlg.appendChild(btnBlock);
+        this.show();
+    }
+
     show() {
         this.div.classList.add('dlg--show')
     }
@@ -342,6 +382,7 @@ class Dialog {
     hide() {
         this.div.classList.remove('dlg--show')
     }
+
 }
 
 class MainList {
@@ -357,7 +398,7 @@ class MainList {
         return em;
     }
 
-    makeList(data) {
+    makeListEm(data) {
         const div = this;
         const card = this.createEm('div', this.cls + '__card');
         const target = this.createEm('p', this.cls + '__target');
@@ -370,7 +411,7 @@ class MainList {
         rate.innerText = (data) ? data.rate : null;
         const first = this.createEm('p', this.cls + '__first');
         first.innerText = (data) ? data.first : null;
-        const bet = this.createEm('p', this.cls + '__rate');
+        const bet = this.createEm('p', this.cls + '__monthly');
         bet.innerText = (data) ? Number(data.payUp).toFixed(2) : undefined;
         const makePlaceholder = (text, t = 0, b = 0) => {
             const em = this.createEm('span', this.cls + '__placeholder');
@@ -378,6 +419,24 @@ class MainList {
             em.innerText = text;
             return em;
         }
+        const remove = this.createEm('img', this.cls + '__del');
+        remove.src = "assets/delete.svg"
+        remove.addEventListener('click', function () {
+            div.removeitem(this.parentElement);
+        })
+
+        const graphBtn = this.createEm('img', this.cls + '__graph');
+        graphBtn.src = "assets/graph.svg"
+        graphBtn.addEventListener('click', function () {
+            div.showGrapg(this.parentElement);
+        })
+
+        const editbtn = this.createEm('button', this.cls + '__edit');
+        editbtn.innerText = 'Изменить';
+        editbtn.addEventListener('click', function () {
+            div.editem(this.parentElement, data);
+        })
+
         card.appendChild(target);
         card.appendChild(makePlaceholder('цель'));
         card.appendChild(cost);
@@ -390,44 +449,102 @@ class MainList {
         card.appendChild(makePlaceholder('первоначальный'));
         card.appendChild(bet);
         card.appendChild(makePlaceholder('в месяц'));
+        card.appendChild(remove);
+        card.appendChild(graphBtn);
+        card.appendChild(editbtn);
         return card;
     }
 
+    showGrapg(em) {
+        console.log(em);
+    }
+
+    editem(em) {
+        console.log(em);
+    }
+
+    removeitem(em) {
+        console.log(em);
+    }
+
     addToList(obj) {
-        const em = this.makeList(obj);
-        this.list.push(em);
+        const em = this.makeListEm(obj);
+        em.dataset.id = this.list.length;
+        this.list.push(obj);
         document.querySelector('.list').appendChild(em)
+
+    }
+
+    changeEm(em, data) {
+        list.list.splice(em.dataset.id, 1, data)
+        em.querySelector('.' + this.cls + '__target').innerText = data.name;
+        em.querySelector('.' + this.cls + '__cost').innerText = data.cost;
+        em.querySelector('.' + this.cls + '__term').innerText = data.term;
+        em.querySelector('.' + this.cls + '__rate').innerText = data.rate;
+        em.querySelector('.' + this.cls + '__first').innerText = data.first;
+        em.querySelector('.' + this.cls + '__monthly').innerText = Number(data.payUp).toFixed(2);
+    }
+    recalc() {
+        let sum = 0;
+        this.list.forEach(e => {
+            sum += e.payUp;
+        })
+        return 'Всего: ' + sum.toFixed(2);
     }
 }
 
 const t = {
     cost: 1500000,
-    rate: 5,
-    term: 10,
-    first: 10000
+    rate: 10,
+    term: 20,
+    first: 100000
 }
 
-
-// const graph = new makeGraph('.graph', 357, ['#d60d93', '#0f0', '#00f']);
-// const em = graph.drawGraph(td);
-// console.table(td.payments);
-
-const td = calc(t.cost, t.rate, t.term, t.first, 'ТестоваяЦель');
+const info = document.querySelector('.footer-info');
 const list = new MainList('list', 'list_em');
 const dlg = new Dialog('main_dlg');
+list.editem = function (em) {
+    dlg.drawAdd((dlg, bid) => {
+        if (bid === 'Изменить') {
+            list.changeEm(em, dlg.curObj)
+            info.innerText = list.recalc();
+        }
+        dlg.hide();
+    }, list.list[em.dataset.id])
+}
+list.removeitem = function (em) {
+    dlg.drawYesNo('Точно?', (dlg, bd) => {
+        if (bd) {
+            em.remove();
+            list.list.splice(em.dataset.id, 1);
+            [...document.querySelector('.list').children].forEach((em, i) => {
+                em.dataset.id = i;
+            });
+            info.innerText = list.recalc();
+        }
+        dlg.hide();
+    })
+}
+list.showGrapg = function (em) {
+    dlg.drawGraph(list.list[em.dataset.id], (dlg, bd) => {
+        dlg.hide();
+    });
+}
 const plusbutton = document.querySelector('.plusbutton');
 plusbutton.addEventListener('click', e => {
     e.preventDefault();
-    dlg.drawAdd(dlg => {
-        list.addToList(dlg.curObj)
+    dlg.drawAdd((dlg, bid) => {
+        if (bid === 'Добавить') {
+            list.addToList(dlg.curObj)
+            info.innerText = list.recalc();
+        } else if (bid === 'Изменить') {
+
+        }
         dlg.hide();
     })
 })
 
-list.addToList(td)
-list.addToList(td)
-list.addToList(td)
-list.addToList(td)
-list.addToList(td)
-list.addToList(td)
-list.addToList(td)
+for (let i = 1; i < 6; i++) {
+    list.addToList(calc(1000000 * i, i, t.term, t.first, 'ТестоваяЦель ' + i))
+}
+info.innerText = list.recalc();
